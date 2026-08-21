@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 url = "https://quotes.toscrape.com/"
 
 response = requests.get(url)
-
+response.raise_for_status()
 # print(response.status_code)
 # print(response.text)
 
@@ -12,6 +12,8 @@ soup = BeautifulSoup(response.text, 'html.parser')
 
 quotes = soup.find_all("div", class_="quote")
 print(len(quotes))
+
+quotes_data = []
 
 print("===== QUOTE SCRAPER =====")
 for quote in quotes:
@@ -22,12 +24,14 @@ for quote in quotes:
   text = quote.find("span", class_="text")
   author = quote.find("small" , class_="author")
 
-  print("Quote: " ,end="")
-  print(text.get_text())
-  print("Author: " ,end="")
-  print(author.get_text())
-  print("Tags: " ,end="")
-  for i in tag_list:
-    print(i,end=' ')
-  print()
-  print()
+
+  data = {
+    "qoute": text.get_text(),
+    "author": author.get_text(),
+    "tags": ", ".join(tag_list)
+  }
+
+  quotes_data.append(data)
+
+print()
+print(quotes_data)
