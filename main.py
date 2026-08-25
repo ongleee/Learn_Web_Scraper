@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 from urllib.parse import urljoin
+import time
 
 # url = "https://quotes.toscrape.com/"
 
@@ -14,9 +15,15 @@ from urllib.parse import urljoin
 
 
 def scrape_page(url):
-  response = requests.get(url)
+  try:
+    response = requests.get(url , timeout=10)
+    response.raise_for_status()
+  except requests.RequestException as e:
+    print(f"ERROR: {e}")
+    return [],None
+
   soup = BeautifulSoup(response.text, 'html.parser')
-  response.raise_for_status()
+  
   quotes = soup.find_all("div", class_="quote")
   quotes_data = []
 
@@ -48,8 +55,9 @@ def scrape_page(url):
   
   return quotes_data,next_url
 
+
+
 all_quotes = []
-page = 1
 
 url = "https://quotes.toscrape.com/"
 
@@ -57,8 +65,9 @@ while url:
   data, next_url = scrape_page(url)
   all_quotes.extend(data)
 
-  print(f"Scraped: {len(data)} quotes")
-
+  if next_url:
+    time.sleep(1)
+    
   url = next_url
 
 print(len(all_quotes))
@@ -71,6 +80,3 @@ with open("quotes.csv","w", newline="", encoding="utf-8") as file:
   writer.writeheader()
 
   writer.writerows(all_quotes)
-
-print()
-print(all_quotes)
